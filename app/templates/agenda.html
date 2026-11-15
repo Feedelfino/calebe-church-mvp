@@ -1,0 +1,7 @@
+﻿{% extends "base.html" %}
+{% block content %}
+<h1>Agenda Mensal</h1>
+{% for e in eventos %}
+  <div>{{ e.titulo }} - {{ e.horario }}</div>
+{% endfor %}
+{% endblock %}

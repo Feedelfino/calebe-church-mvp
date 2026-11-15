@@ -1,0 +1,8 @@
+﻿{% extends "base.html" %}
+{% block content %}
+<h1>Painel Financeiro</h1>
+<p>Entradas: {{ "%.2f"|format(resumo.entradas) }} | Saidas: {{ "%.2f"|format(resumo.saidas) }} | Saldo: {{ "%.2f"|format(resumo.saldo) }} | Cestas: {{ resumo.cestas_disponiveis }}</p>
+{% for l in lancamentos %}
+  <div>{{ l.descricao }} - {{ "%.2f"|format(l.valor) }}</div>
+{% endfor %}
+{% endblock %}

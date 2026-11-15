@@ -1,0 +1,7 @@
+﻿{% extends "base.html" %}
+{% block content %}
+<h1>Membros e Familias</h1>
+{% for m in membros %}
+  <div>{{ m.nome_completo }} - {{ m.bairro }}</div>
+{% endfor %}
+{% endblock %}
