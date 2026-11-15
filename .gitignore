@@ -1,0 +1,23 @@
+# Ambiente virtual Python
+venv/
+.venv/
+env/
+
+# Cache do Python e testes
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Banco de dados local e variáveis de ambiente
+*.db
+*.sqlite3
+instance/
+.env
+
+# Configuracoes de IDE e sistema
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
