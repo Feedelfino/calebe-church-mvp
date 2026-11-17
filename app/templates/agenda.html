@@ -1,7 +1,86 @@
 ﻿{% extends "base.html" %}
+
+{% block title %}Agenda Mensal — Calebe Church{% endblock %}
+
 {% block content %}
-<h1>Agenda Mensal</h1>
-{% for e in eventos %}
-  <div>{{ e.titulo }} - {{ e.horario }}</div>
-{% endfor %}
+<header class="page-header">
+  <h1>Agenda Mensal da Igreja</h1>
+  <p>Organização centralizada de cultos, reuniões administrativas, eventos e datas de entrega de cestas básicas.</p>
+</header>
+
+<section class="card">
+  <h2 class="card-title">+ Agendar Nova Atividade</h2>
+  <form method="POST" action="{{ url_for('main.agenda') }}" class="form-stack">
+    <div class="form-grid cols-2">
+      <div class="field">
+        <label for="titulo">Título do Culto / Evento</label>
+        <input id="titulo" name="titulo" type="text" placeholder="Ex.: Culto da Família ou Entrega de Cestas" required />
+      </div>
+
+      <div class="field">
+        <label for="local">Local</label>
+        <input id="local" name="local" type="text" value="Templo Principal" required />
+      </div>
+    </div>
+
+    <div class="form-grid cols-3">
+      <div class="field">
+        <label for="data_evento">Data</label>
+        <input id="data_evento" name="data_evento" type="date" value="{{ hoje }}" required />
+      </div>
+
+      <div class="field">
+        <label for="horario">Horário</label>
+        <input id="horario" name="horario" type="time" value="19:30" required />
+      </div>
+
+      <div class="field">
+        <label for="observacoes">Responsável / Observações</label>
+        <input id="observacoes" name="observacoes" type="text" placeholder="Ex.: Pr. Ricardo / Equipe Social" />
+      </div>
+    </div>
+
+    <div>
+      <button type="submit" class="btn btn-primary">Salvar na Agenda</button>
+    </div>
+  </form>
+</section>
+
+<section class="card">
+  <h2 class="card-title">Próximos Compromissos ({{ eventos|length }})</h2>
+  {% if eventos %}
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Horário</th>
+            <th>Atividade</th>
+            <th>Local</th>
+            <th>Observações</th>
+            <th>Ação</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for e in eventos %}
+          <tr>
+            <td><strong>{{ e.data_evento.strftime('%d/%m/%Y') }}</strong></td>
+            <td>{{ e.horario }}</td>
+            <td>{{ e.titulo }}</td>
+            <td>{{ e.local }}</td>
+            <td>{{ e.observacoes or '—' }}</td>
+            <td>
+              <form method="POST" action="{{ url_for('main.excluir_evento', id=e.id) }}" onsubmit="return confirm('Remover este evento da agenda?');">
+                <button type="submit" class="btn btn-danger">Excluir</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p style="color:#475569;">Nenhum evento agendado até o momento.</p>
+  {% endif %}
+</section>
 {% endblock %}

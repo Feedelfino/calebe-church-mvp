@@ -1,13 +1,53 @@
-﻿<!doctype html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Calebe Church</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Calebe Church — Gestão{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
 </head>
 <body>
-  <main class="container py-4">
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a href="{{ url_for('main.dashboard') }}" class="topbar-brand">
+        Calebe Church
+      </a>
+
+      <nav class="nav-links" aria-label="Menu principal">
+        <a
+          href="{{ url_for('main.dashboard') }}"
+          class="nav-link {% if request.endpoint == 'main.dashboard' %}active{% endif %}"
+        >
+          Dashboard
+        </a>
+        <a
+          href="{{ url_for('main.membros') }}"
+          class="nav-link {% if request.endpoint == 'main.membros' %}active{% endif %}"
+        >
+          Membros
+        </a>
+        <a
+          href="{{ url_for('main.agenda') }}"
+          class="nav-link {% if request.endpoint == 'main.agenda' %}active{% endif %}"
+        >
+          Agenda
+        </a>
+        <a href="{{ url_for('main.logout') }}" class="nav-link logout">
+          Sair
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
     {% block content %}{% endblock %}
   </main>
 </body>

@@ -1,7 +1,115 @@
 ﻿{% extends "base.html" %}
+
+{% block title %}Membros e Famílias — Calebe Church{% endblock %}
+
 {% block content %}
-<h1>Membros e Familias</h1>
-{% for m in membros %}
-  <div>{{ m.nome_completo }} - {{ m.bairro }}</div>
-{% endfor %}
+<header class="page-header">
+  <h1>Membros e Famílias Assistidas</h1>
+  <p>Cadastro unificado da congregação e das famílias acompanhadas nas entregas de cestas básicas.</p>
+</header>
+
+<section class="card">
+  <h2 class="card-title">+ Cadastrar Membro ou Família</h2>
+  <form method="POST" action="{{ url_for('main.membros') }}" class="form-stack">
+    <div class="form-grid cols-2">
+      <div class="field">
+        <label for="nome">Nome Completo ou Nome da Família</label>
+        <input id="nome" name="nome" type="text" placeholder="Ex.: Família Silva ou João Santos" required />
+      </div>
+
+      <div class="field">
+        <label for="telefone">Telefone / WhatsApp</label>
+        <input id="telefone" name="telefone" type="text" placeholder="(11) 99999-9999" required />
+      </div>
+    </div>
+
+    <div class="form-grid cols-3">
+      <div class="field">
+        <label for="bairro">Bairro / Região</label>
+        <input id="bairro" name="bairro" type="text" placeholder="Ex.: Centro - Barueri" required />
+      </div>
+
+      <div class="field">
+        <label for="vinculo">Tipo de Vínculo</label>
+        <select id="vinculo" name="vinculo" required>
+          <option value="Membro">Membro da Igreja</option>
+          <option value="Família Assistida">Família Assistida (Ação Social)</option>
+          <option value="Membro e Família Assistida">Ambos (Membro e Assistida)</option>
+        </select>
+      </div>
+
+      <div class="field" style="justify-content: flex-end;">
+        <label style="display:flex; align-items:center; gap:0.55rem; min-height:46px; cursor:pointer;">
+          <input type="checkbox" name="recebe_cesta" value="1" style="width:20px; min-height:20px;" />
+          <span>Recebe Cesta Básica Mensal</span>
+        </label>
+      </div>
+    </div>
+
+    <div>
+      <button type="submit" class="btn btn-primary">Salvar Cadastro</button>
+    </div>
+  </form>
+</section>
+
+<section class="card">
+  <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:0.75rem; margin-bottom:1rem; padding-bottom:0.5rem; border-bottom:1px solid #e2e8f0;">
+    <h2 style="font-size:1.1rem; color:#0f2942; margin:0;">Lista de Cadastros ({{ membros|length }})</h2>
+
+    <form method="GET" action="{{ url_for('main.membros') }}" style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+      <input
+        type="text"
+        name="q"
+        value="{{ busca }}"
+        placeholder="Buscar por nome..."
+        style="min-height:40px; padding:0.4rem 0.75rem; border:1.5px solid #cbd5e1; border-radius:8px;"
+      />
+      <button type="submit" class="btn btn-primary" style="min-height:40px; padding:0.4rem 0.9rem;">Buscar</button>
+      {% if busca %}
+        <a href="{{ url_for('main.membros') }}" class="btn" style="min-height:40px; background:#e2e8f0; color:#0f172a;">Limpar</a>
+      {% endif %}
+    </form>
+  </div>
+
+  {% if membros %}
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Nome / Família</th>
+            <th>Telefone</th>
+            <th>Bairro</th>
+            <th>Vínculo</th>
+            <th>Cesta Básica</th>
+            <th>Ação</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for m in membros %}
+          <tr>
+            <td><strong>{{ m.nome }}</strong></td>
+            <td>{{ m.telefone }}</td>
+            <td>{{ m.bairro }}</td>
+            <td><span class="badge badge-membro">{{ m.vinculo }}</span></td>
+            <td>
+              {% if m.recebe_cesta %}
+                <span class="badge badge-entrada">Sim (Ativa)</span>
+              {% else %}
+                <span style="color:#64748b;">Não</span>
+              {% endif %}
+            </td>
+            <td>
+              <form method="POST" action="{{ url_for('main.excluir_membro', id=m.id) }}" onsubmit="return confirm('Excluir este cadastro?');">
+                <button type="submit" class="btn btn-danger">Excluir</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p style="color:#475569;">Nenhum membro ou família encontrado.</p>
+  {% endif %}
+</section>
 {% endblock %}

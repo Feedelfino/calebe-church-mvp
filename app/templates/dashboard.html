@@ -1,8 +1,156 @@
 ﻿{% extends "base.html" %}
+
+{% block title %}Dashboard — Calebe Church{% endblock %}
+
 {% block content %}
-<h1>Painel Financeiro</h1>
-<p>Entradas: {{ "%.2f"|format(resumo.entradas) }} | Saidas: {{ "%.2f"|format(resumo.saidas) }} | Saldo: {{ "%.2f"|format(resumo.saldo) }} | Cestas: {{ resumo.cestas_disponiveis }}</p>
-{% for l in lancamentos %}
-  <div>{{ l.descricao }} - {{ "%.2f"|format(l.valor) }}</div>
-{% endfor %}
+<header class="page-header">
+  <h1>Painel Administrativo e Balanço</h1>
+  <p>Olá, {{ current_user.nome }}. Acompanhe os membros cadastrados e o fluxo financeiro em tempo real.</p>
+</header>
+
+<section class="kpi-grid" aria-label="Indicadores principais">
+  <div class="kpi-card membros">
+    <div class="kpi-label">Membros &amp; Famílias</div>
+    <div class="kpi-value">{{ total_membros }}</div>
+  </div>
+
+  <div class="kpi-card entrada">
+    <div class="kpi-label">Total de Entradas</div>
+    <div class="kpi-value">R$ {{ "%.2f"|format(total_entradas)|replace('.', ',') }}</div>
+  </div>
+
+  <div class="kpi-card saida">
+    <div class="kpi-label">Total de Saídas</div>
+    <div class="kpi-value">R$ {{ "%.2f"|format(total_saidas)|replace('.', ',') }}</div>
+  </div>
+
+  <div class="kpi-card">
+    <div class="kpi-label">Balanço / Saldo</div>
+    <div class="kpi-value">
+      R$ {{ "%.2f"|format(saldo)|replace('.', ',') }}
+      {% if saldo_cestas != 0 %}
+        <small style="display:block; font-size:0.85rem; color:#475569;">({{ saldo_cestas }} cestas em estoque)</small>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<section class="card">
+  <h2 class="card-title">+ Novo Lançamento (Financeiro ou Cesta Básica)</h2>
+  <form method="POST" action="{{ url_for('main.novo_lancamento') }}" class="form-stack">
+    <div class="form-grid cols-3">
+      <div class="field">
+        <label for="tipo">Tipo de Movimento</label>
+        <select id="tipo" name="tipo" required>
+          <option value="entrada">[+] Entrada</option>
+          <option value="saida">[-] Saída</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="categoria">Categoria</label>
+        <select id="categoria" name="categoria" required>
+          <option value="Dízimo">Dízimo</option>
+          <option value="Oferta de Culto">Oferta de Culto</option>
+          <option value="Doação Financeira">Doação Financeira</option>
+          <option value="Cesta Básica">Cesta Básica (Entrada/Entrega)</option>
+          <option value="Despesa Fixa">Despesa Fixa (Água/Luz/Aluguel)</option>
+          <option value="Ação Social">Ação Social / Outros</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="data_movimento">Data</label>
+        <input id="data_movimento" name="data_movimento" type="date" value="{{ hoje }}" required />
+      </div>
+    </div>
+
+    <div class="form-grid cols-3">
+      <div class="field">
+        <label for="valor">Valor Financeiro (R$)</label>
+        <input id="valor" name="valor" type="number" step="0.01" min="0" value="0.00" required />
+      </div>
+
+      <div class="field">
+        <label for="quantidade_cestas">Qtd. Cestas Básicas</label>
+        <input id="quantidade_cestas" name="quantidade_cestas" type="number" min="0" value="0" />
+      </div>
+
+      <div class="field">
+        <label for="membro_id">Família / Membro Vinculado (Opcional)</label>
+        <select id="membro_id" name="membro_id">
+          <option value="">-- Nenhum vínculo --</option>
+          {% for m in membros_lista %}
+            <option value="{{ m.id }}">{{ m.nome }} ({{ m.vinculo }})</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="descricao">Descrição / Observação</label>
+      <input id="descricao" name="descricao" type="text" placeholder="Ex.: Oferta culto de domingo ou entrega cesta Família Silva" required />
+    </div>
+
+    <div>
+      <button type="submit" class="btn btn-primary">Salvar Lançamento</button>
+    </div>
+  </form>
+</section>
+
+<section class="card">
+  <h2 class="card-title">Histórico de Movimentações</h2>
+  {% if lancamentos %}
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Tipo</th>
+            <th>Categoria</th>
+            <th>Descrição</th>
+            <th>Valor / Cestas</th>
+            <th>Ação</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in lancamentos %}
+          <tr>
+            <td>{{ item.data_movimento.strftime('%d/%m/%Y') }}</td>
+            <td>
+              {% if item.tipo == 'entrada' %}
+                <span class="badge badge-entrada">Entrada</span>
+              {% else %}
+                <span class="badge badge-saida">Saída</span>
+              {% endif %}
+            </td>
+            <td>{{ item.categoria }}</td>
+            <td>
+              {{ item.descricao }}
+              {% if item.membro %}
+                <br /><small style="color:#475569;">Vínculo: {{ item.membro.nome }}</small>
+              {% endif %}
+            </td>
+            <td>
+              {% if item.valor > 0 %}
+                <strong>R$ {{ "%.2f"|format(item.valor)|replace('.', ',') }}</strong>
+              {% endif %}
+              {% if item.quantidade_cestas > 0 %}
+                <span>{{ item.quantidade_cestas }} cesta(s)</span>
+              {% endif %}
+            </td>
+            <td>
+              <form method="POST" action="{{ url_for('main.excluir_lancamento', id=item.id) }}" onsubmit="return confirm('Remover este lançamento?');">
+                <button type="submit" class="btn btn-danger">Excluir</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p style="color:#475569;">Nenhum lançamento registrado ainda. Utilize o formulário acima para iniciar o balanço.</p>
+  {% endif %}
+</section>
 {% endblock %}

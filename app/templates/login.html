@@ -1,9 +1,77 @@
-﻿{% extends "base.html" %}
-{% block content %}
-<h1>Login Calebe Church</h1>
-<form method="post">
-  <input type="email" name="email" required>
-  <input type="password" name="senha" required>
-  <button type="submit">Entrar</button>
-</form>
-{% endblock %}
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Acesso Restrito — Calebe Church</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+<body class="login-page">
+  <main class="login-card">
+    <header class="login-header">
+      <span class="brand-badge">Calebe Church</span>
+      <h1>Gestão Administrativa</h1>
+      <p>Acesse com suas credenciais para gerenciar membros, balanço e agenda.</p>
+    </header>
+
+    <form method="POST" action="{{ url_for('main.login') }}" class="form-stack">
+      <div class="field">
+        <label for="email">E-mail</label>
+        <input
+          id="email"
+          name="email"
+          type="email"
+          placeholder="secretaria@calebechurch.org.br"
+          required
+          autofocus
+        />
+      </div>
+
+      <div class="field">
+        <label for="senha">Senha</label>
+        <input
+          id="senha"
+          name="senha"
+          type="password"
+          placeholder="Digite sua senha"
+          required
+        />
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-full">
+        Entrar no Sistema
+      </button>
+    </form>
+
+    <footer class="login-footer">
+      <span>Uso exclusivo da liderança e secretaria • Barueri/SP</span>
+    </footer>
+  </main>
+
+  {# Consome todas as mensagens flash e exibe pop-up APENAS se houver erro de acesso #}
+  {% set mensagens_erro = get_flashed_messages(category_filter=['danger', 'error']) %}
+  {% set _limpar_outras = get_flashed_messages() %}
+  {% if mensagens_erro %}
+  <div class="modal-backdrop" id="modal-acesso-negado" role="dialog" aria-modal="true" aria-labelledby="modal-titulo">
+    <div class="modal-box">
+      <div class="modal-icon">⚠️</div>
+      <h2 id="modal-titulo">Acesso Negado</h2>
+      <p>{{ mensagens_erro[-1] }}</p>
+      <button type="button" class="btn btn-primary btn-full" onclick="fecharModal()">
+        Tentar Novamente
+      </button>
+    </div>
+  </div>
+  <script>
+    function fecharModal() {
+      const modal = document.getElementById('modal-acesso-negado');
+      if (modal) modal.style.display = 'none';
+      document.getElementById('senha').focus();
+    }
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') fecharModal();
+    });
+  </script>
+  {% endif %}
+</body>
+</html>
